@@ -10,7 +10,7 @@ df
 features = df.columns[3:-1]
 target = 'flActive'
 
-# stratify serve para equalizar o target de teste e treino
+# stratify serve para equalizar o target de teste e treino (mesma medida de target)
 X_train, X_test, y_train, y_test = model_selection.train_test_split(df[features],
                                                                     df[target],
                                                                     test_size=0.2,
