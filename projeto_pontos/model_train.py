@@ -75,26 +75,34 @@ model = tree.DecisionTreeClassifier(max_depth=4,
 
 model_rf = ensemble.RandomForestClassifier(random_state=42)
 
+params = {
+    'n_estimators': [100,150,250,500],
+    'min_samples_leaf': [10,20,30,50,100],
+}
+
+grid = model_selection.GridSearchCV(model_rf, 
+                                    param_grid=params,
+                                    n_jobs=-1,
+                                    scoring='roc_auc')
+
 # fazendo a transformação na base de treino
 meu_pipeline = pipeline.Pipeline([
     ('imput_0', imputation_0),
     ('imput_max',imputation_max),
-    ('model',model_rf)
+    ('model',grid)
     ])
 
-params = {
-    'model__n_estimators': [100,150,250,500],
-    'model__min_samples_leaf': [10,20,30,50,100],
-}
-
-grid = model_selection.GridSearchCV(meu_pipeline, param_grid=params)
-grid.fit(X_train, y_train)
+meu_pipeline.fit(X_train, y_train)
 
 # %%
 
+pd.DataFrame(grid.cv_results_)
+
+# %%
 # PREVENDO O MODELO
 
 # treino
+# modelo já com o grid search
 y_train_predict = meu_pipeline.predict(X_train)
 y_train_proba = meu_pipeline.predict_proba(X_train)[:,1]
 
@@ -117,6 +125,8 @@ print('ROC Curve Train:', auc_train)
 print('ROC Curve Test', auc_teste)
 
 # %%
+# PLOTANDO
+
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
 
