@@ -10,6 +10,7 @@ from sklearn import linear_model
 from sklearn import ensemble
 from sklearn import naive_bayes
 
+import scikitplot as skplt
 import matplotlib.pyplot as plt
 from feature_engine import imputation
 
@@ -80,6 +81,7 @@ params = {
     'min_samples_leaf': [10,20,30,50,100],
 }
 
+# n_jobs -> quantos processadores quero que o PC use
 grid = model_selection.GridSearchCV(model_rf, 
                                     param_grid=params,
                                     n_jobs=-1,
@@ -108,7 +110,7 @@ y_train_proba = meu_pipeline.predict_proba(X_train)[:,1]
 
 # teste
 y_test_predict = meu_pipeline.predict(X_test)
-y_test_proba = meu_pipeline.predict_proba(X_test)[:,1]
+y_test_proba = meu_pipeline.predict_proba(X_test)
 
 # %%
 
@@ -120,7 +122,7 @@ print('Acurácia teste ACC:', acc_teste)
 
 # roc curve
 auc_train = metrics.roc_auc_score(y_train, y_train_proba)
-auc_teste = metrics.roc_auc_score(y_test, y_test_proba)
+auc_teste = metrics.roc_auc_score(y_test, y_test_proba[:,1])
 print('ROC Curve Train:', auc_train)
 print('ROC Curve Test', auc_teste)
 
@@ -150,4 +152,46 @@ plt.legend()
 plt.grid()
 plt.show()
 
+# %%
+
+# estou pegando o grid do pipeline, depois o best estimator (melhor modelo)
+# e depois pego o atributo feature importances
+f_importance = meu_pipeline[-1].best_estimator_.feature_importances_
+pd.Series(f_importance, index=features).sort_values(ascending=False)
+# %%
+
+plt.figure(dpi=600)
+skplt.metrics.plot_roc(y_test, y_test_proba)
+
+# %%
+
+# MÉTRICA NOVA: CUMULATIVE GAIN (taxa de captura)
+# Muito bom para fraude
+
+skplt.metrics.plot_cumulative_gain(y_test, y_test_proba)
+
+usuarios_test = pd.DataFrame(
+    {'verdadeiro': y_test,
+     'proba': y_test_proba[:,1]}
+)
+
+# ordeno por taxa de probabilidade
+usuarios_test = usuarios_test.sort_values('proba', ascending=False)
+usuarios_test['sum_verdadeiro'] = usuarios_test['verdadeiro'].cumsum()
+usuarios_test['tx_captura'] = usuarios_test['sum_verdadeiro'] / usuarios_test['verdadeiro'].sum()
+usuarios_test
+# %%
+
+# MÉTRICA NOVA: LIFT
+
+skplt.metrics.plot_lift_curve(y_test, y_test_proba)
+
+# %%
+'''
+basicamente esse é o calculo que mostra que aos 20% dos dados
+o meu modelo é 2.4x mais efetivo do que um chute que eu teria
+'''
+usuarios_test.head(100)['verdadeiro'].mean() / usuarios_test['verdadeiro'].mean()
+# %%
+usuarios_test
 # %%
