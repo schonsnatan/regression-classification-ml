@@ -7,13 +7,14 @@ from sklearn import ensemble
 from sklearn import pipeline
 
 from feature_engine import imputation
-
 import scikitplot as skplt
 
+# %%
 df = pd.read_csv("../data/dados_pontos.csv", sep=";")
 
 features = df.columns[3:-1]
 target = "flActive"
+df
 
 # %%
 X_train, X_test, y_train, y_test = model_selection.train_test_split(df[features],
@@ -56,12 +57,10 @@ y_test_proba
 
 # %%
 
-df = pd.DataFrame({
-    "flActive": y_test,
-    "proba_modelo":y_test_proba[:,1]
+pd.DataFrame({
+    'flActive': y_test,
+    'proba_modelo': y_test_proba[:,1]
 })
 
 df.to_excel("../data/dados_ks.xlsx", index=False)
 # %%
-
-skplt.metrics.plot_ks_statistic(y_test, y_test_proba)
