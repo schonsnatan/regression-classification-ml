@@ -85,7 +85,9 @@ params = {
 grid = model_selection.GridSearchCV(model_rf, 
                                     param_grid=params,
                                     n_jobs=-1,
-                                    scoring='roc_auc')
+                                    scoring='roc_auc',
+                                    verbose=3,
+                                    cv=3)
 
 # fazendo a transformação na base de treino
 meu_pipeline = pipeline.Pipeline([
@@ -134,7 +136,7 @@ from sklearn.metrics import roc_curve
 
 # Gerando os pontos da curva ROC (FPR, TPR)
 fpr_train, tpr_train, _ = roc_curve(y_train, y_train_proba)
-fpr_test, tpr_test, _ = roc_curve(y_test, y_test_proba)
+fpr_test, tpr_test, _ = roc_curve(y_test, y_test_proba[:,1])
 
 # Criando o gráfico
 plt.figure(figsize=(8,6))
@@ -194,4 +196,27 @@ o meu modelo é 2.4x mais efetivo do que um chute que eu teria
 usuarios_test.head(100)['verdadeiro'].mean() / usuarios_test['verdadeiro'].mean()
 # %%
 usuarios_test
+# %%
+
+# ROC CURVE - Plot alternativo
+
+auc = metrics.roc_auc_score(y_test, y_test_proba[:,1])
+
+auc_curve = metrics.roc_curve(y_test, y_test_proba[:,1])
+plt.plot(auc_curve[0], auc_curve[1])
+plt.grid(True)
+plt.title('Curva ROC')
+plt.legend([f'AUC: {auc:.4f}'])
+plt.show()
+
+# %%
+model_s = pd.Series(
+    {'model':meu_pipeline,
+     'features':features,
+     'auc_test':auc
+     }
+)
+
+# persistindo o modelo (serializando - binario)
+model_s.to_pickle('modelo_rf.pkl')
 # %%

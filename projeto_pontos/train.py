@@ -65,3 +65,5 @@ print('Árvore Test AUC:', tree_auc_test)
 # como tenho um vetor de 0s e 1s a minha média é um valor entre 0s e 1s
 # soma de 1s / total de ids
 1 - y_test.mean()
+
+# %%
