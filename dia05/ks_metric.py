@@ -64,3 +64,5 @@ pd.DataFrame({
 
 df.to_excel("../data/dados_ks.xlsx", index=False)
 # %%
+skplt.metrics.plot_ks_statistic(y_test, y_test_proba)
+# %%
